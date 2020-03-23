@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
@@ -7,32 +7,37 @@ using WebApplication1.Models;
 using ODataService.Helpers;
 using Microsoft.AspNet.OData;
 using Microsoft.AspNet.OData.Routing;
+using ODataService.Controllers;
 
-namespace WebApplication1.Controllers {
-    public class ProductController : ODataController {
+namespace WebApplication1.Controllers
+{
+    public class ProductController : BaseController
+    {
 
-        private UnitOfWork Session;
-        
         [EnableQuery]
-        public IQueryable<Product> Get() {
-            Session = ConnectionHelper.CreateSession();
+        public IQueryable<Product> Get()
+        {
             return Session.Query<Product>().AsWrappedQuery();
         }
 
         [EnableQuery]
-        public SingleResult<Product> Get([FromODataUri] int key) {
-            Session = ConnectionHelper.CreateSession();
+        public SingleResult<Product> Get([FromODataUri] int key)
+        {
             var result = Session.Query<Product>().AsWrappedQuery().Where(t => t.ProductID == key);
             return SingleResult.Create(result);
         }
 
         [HttpPost]
-        public IHttpActionResult Post(Product product) {
-            if(!ModelState.IsValid) {
+        public IHttpActionResult Post(Product product)
+        {
+            if (!ModelState.IsValid)
+            {
                 return BadRequest();
             }
-            using(UnitOfWork uow = ConnectionHelper.CreateSession()) {
-                Product entity = new Product(uow) {
+            using (UnitOfWork uow = GetNewUow())
+            {
+                Product entity = new Product(uow)
+                {
                     ProductName = product.ProductName,
                     Picture = product.Picture
                 };
@@ -42,23 +47,31 @@ namespace WebApplication1.Controllers {
         }
 
         [HttpPut]
-        public IHttpActionResult Put([FromODataUri] int key, Product product) {
-            if(!ModelState.IsValid) {
+        public IHttpActionResult Put([FromODataUri] int key, Product product)
+        {
+            if (!ModelState.IsValid)
+            {
                 return BadRequest();
             }
-            if(key != product.ProductID) {
+            if (key != product.ProductID)
+            {
                 return BadRequest();
             }
-            using(UnitOfWork uow = ConnectionHelper.CreateSession()) {
+            using (UnitOfWork uow = GetNewUow())
+            {
                 Product existing = uow.GetObjectByKey<Product>(key);
-                if(existing == null) {
-                    Product entity = new Product(uow) {
+                if (existing == null)
+                {
+                    Product entity = new Product(uow)
+                    {
                         ProductName = product.ProductName,
                         Picture = product.Picture
                     };
                     uow.CommitChanges();
                     return Created(entity);
-                } else {
+                }
+                else
+                {
                     existing.ProductName = product.ProductName;
                     existing.Picture = product.Picture;
                     uow.CommitChanges();
@@ -68,40 +81,36 @@ namespace WebApplication1.Controllers {
         }
 
         [HttpPatch]
-        public IHttpActionResult Patch([FromODataUri] int key, Delta<Product> product) {
-            if(!ModelState.IsValid) {
+        public IHttpActionResult Patch([FromODataUri] int key, Delta<Product> product)
+        {
+            if (!ModelState.IsValid)
+            {
                 return BadRequest();
             }
-            var result = ApiHelper.Patch<Product, int>(key, product);
-            if(result != null) {
+            var result = ApiHelper.Patch<Product, int>(key, product, this);
+            if (result != null)
+            {
                 return Updated(result);
             }
             return NotFound();
         }
 
         [HttpDelete]
-        public IHttpActionResult Delete([FromODataUri] int key) {
-            return StatusCode(ApiHelper.Delete<Product, int>(key));
+        public IHttpActionResult Delete([FromODataUri] int key)
+        {
+            return StatusCode(ApiHelper.Delete<Product, int>(key, this));
         }
 
         [HttpPost, HttpPut]
-        public IHttpActionResult CreateRef([FromODataUri]int key, string navigationProperty, [FromBody] Uri link) {
-            return StatusCode(ApiHelper.CreateRef<Product, int>(Request, key, navigationProperty, link));
+        public IHttpActionResult CreateRef([FromODataUri]int key, string navigationProperty, [FromBody] Uri link)
+        {
+            return StatusCode(ApiHelper.CreateRef<Product, int>(Request, key, navigationProperty, link, this));
         }
 
         [HttpDelete]
-        public IHttpActionResult DeleteRef([FromODataUri] int key, [FromODataUri] int relatedKey, string navigationProperty) {
-            return StatusCode(ApiHelper.DeleteRef<Product, int, int>(key, relatedKey, navigationProperty));
-        }
-
-        protected override void Dispose(bool disposing) {
-            base.Dispose(disposing);
-            if(disposing) {
-                if(Session != null) {
-                    Session.Dispose();
-                    Session = null;
-                }
-            }
+        public IHttpActionResult DeleteRef([FromODataUri] int key, [FromODataUri] int relatedKey, string navigationProperty)
+        {
+            return StatusCode(ApiHelper.DeleteRef<Product, int, int>(key, relatedKey, navigationProperty, this));
         }
     }
 }

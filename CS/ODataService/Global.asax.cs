@@ -1,26 +1,36 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Web.Http;
 using System.Web.Http.Validation;
+using DevExpress.ExpressApp;
+using DevExpress.ExpressApp.Security;
+using DevExpress.ExpressApp.Xpo;
 using DevExpress.Xpo;
 using DevExpress.Xpo.DB;
 using ODataService.Helpers;
 
 namespace WebApplication1
 {
-    public class WebApiApplication : System.Web.HttpApplication {
-        protected void Application_Start() {
+    public class WebApiApplication : System.Web.HttpApplication
+    {
+        protected void Application_Start()
+        {
             GlobalConfiguration.Configuration.Services.Replace(typeof(IBodyModelValidator), new CustomBodyModelValidator());
             GlobalConfiguration.Configure(WebApiConfig.Register);
             ConnectionHelper.EnsureDatabaseCreated();
+
             XpoDefault.DataLayer = ConnectionHelper.CreateDataLayer(AutoCreateOption.SchemaAlreadyExists, true);
         }
 
-        public class CustomBodyModelValidator : DefaultBodyModelValidator {
+
+        public class CustomBodyModelValidator : DefaultBodyModelValidator
+        {
             readonly ConcurrentDictionary<Type, bool> persistentTypes = new ConcurrentDictionary<Type, bool>();
-            public override bool ShouldValidateType(Type type) {
+            public override bool ShouldValidateType(Type type)
+            {
                 return persistentTypes.GetOrAdd(type, t => !typeof(IXPSimpleObject).IsAssignableFrom(t));
             }
         }
+
     }
 }
