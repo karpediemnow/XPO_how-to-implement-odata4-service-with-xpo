@@ -61,6 +61,11 @@
       <HintPath>..\..\..\..\Program Files (x86)\DevExpress 18.1\Components\Bin\Framework\DevExpress.ExpressApp.v18.1.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="DevExpress.ExpressApp.Web.v18.1, Version=18.1.11.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Program Files (x86)\DevExpress 18.1\Components\Bin\Framework\DevExpress.ExpressApp.Web.v18.1.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="DevExpress.ExpressApp.Xpo.v18.1, Version=18.1.11.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Program Files (x86)\DevExpress 18.1\Components\Bin\Framework\DevExpress.ExpressApp.Xpo.v18.1.dll</HintPath>
@@ -158,6 +163,7 @@
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\BaseController.cs" />
+    <Compile Include="Helpers\MyASPSessionValueManager.cs" />
     <Compile Include="Helpers\XpoDataStoreProviderService.cs" />
     <Compile Include="Controllers\ActionsController.cs" />
     <Compile Include="Controllers\OrderDetailController.cs" />
@@ -173,6 +179,8 @@
     <Compile Include="Helpers\ApiHelper.cs" />
     <Compile Include="Helpers\XpoLinqQuery.cs" />
     <Compile Include="Helpers\ConnectionHelper.cs" />
+    <Compile Include="HttpHandler\SessionControllerHandler.cs" />
+    <Compile Include="HttpHandler\SessionHttpControllerRouteHandler.cs" />
     <Compile Include="Models\BaseDocument.cs" />
     <Compile Include="Models\Customers.cs" />
     <Compile Include="Helpers\UriHelper.cs" />
@@ -212,7 +220,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>54417</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:54417/</IISUrl>
+          <IISUrl>http://localhost:54417/XpoOData</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

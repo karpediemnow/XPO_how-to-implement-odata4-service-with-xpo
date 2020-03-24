@@ -146,27 +146,21 @@ namespace ODataService.Helpers
 
         #endregion
 
-        #region Security
+        #region Security        
 
-        private static int LastLogin = 0;
-
-        public static SecuredObjectSpaceProvider GetSecuredObjectSpaceProvider()
+        public static SecurityStrategyComplex GetSecurity(string userName)
         {
             AuthenticationStandard authentication = new AuthenticationStandard();
-            var security = new SecurityStrategyComplex(typeof(PermissionPolicyUser), typeof(PermissionPolicyRole), authentication);
-            //security.RegisterXPOAdapterProviders();
-            string userName = null;
+            SecurityStrategyComplex security = new SecurityStrategyComplex(typeof(PermissionPolicyUser), typeof(PermissionPolicyRole), authentication);
+            //security.RegisterXPOAdapterProviders();            
             string password = string.Empty;
-            if (LastLogin % 2 == 0)
-            {
-                userName = "User1";
-            }
-            else
-            {
-                userName = "User2";
-            }
-            LastLogin++;
             authentication.SetLogonParameters(new AuthenticationStandardLogonParameters(userName, password));
+            SecuritySystem.SetInstance(security);
+            return security;
+        }
+
+        public static SecuredObjectSpaceProvider GetSecuredObjectSpaceProvider(SecurityStrategyComplex security)
+        {
             string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             SecuredObjectSpaceProvider objectSpaceProvider = new SecuredObjectSpaceProvider(security, connectionString, null);
             IObjectSpace loginObjectSpace = objectSpaceProvider.CreateObjectSpace();

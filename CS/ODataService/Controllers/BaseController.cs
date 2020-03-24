@@ -1,4 +1,5 @@
 using DevExpress.ExpressApp;
+using DevExpress.ExpressApp.Security;
 using DevExpress.ExpressApp.Security.ClientServer;
 using DevExpress.ExpressApp.Xpo;
 using DevExpress.Xpo;
@@ -13,6 +14,10 @@ namespace ODataService.Controllers
 {
     public class BaseController : ODataController
     {
+        private static int LastLogin = 0;
+
+        private SecurityStrategyComplex security = null;
+
         private SecuredObjectSpaceProvider provider = null;
         public SecuredObjectSpaceProvider Provider
         {
@@ -20,7 +25,19 @@ namespace ODataService.Controllers
             {
                 if (provider == null)
                 {
-                    provider = ConnectionHelper.GetSecuredObjectSpaceProvider();
+                    string userName = null;
+                    if (LastLogin % 2 == 0)
+                    {
+                        userName = "User1";
+                    }
+                    else
+                    {
+                        userName = "User2";
+                    }
+                    LastLogin++;
+
+                    security = ConnectionHelper.GetSecurity(userName);
+                    provider = ConnectionHelper.GetSecuredObjectSpaceProvider(security);
                 }
                 return provider;
             }
@@ -60,6 +77,11 @@ namespace ODataService.Controllers
                 {
                     session.Dispose();
                     session = null;
+                }
+                if (security != null)
+                {
+                    security.Dispose();
+                    security = null;
                 }
                 if (provider != null)
                 {
