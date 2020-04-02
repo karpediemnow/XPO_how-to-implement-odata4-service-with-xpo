@@ -8,6 +8,7 @@ using ODataService.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace ODataService.Controllers
@@ -16,8 +17,6 @@ namespace ODataService.Controllers
     {
         private static int LastLogin = 0;
 
-        private SecurityStrategyComplex security = null;
-
         private SecuredObjectSpaceProvider provider = null;
         public SecuredObjectSpaceProvider Provider
         {
@@ -25,6 +24,8 @@ namespace ODataService.Controllers
             {
                 if (provider == null)
                 {
+                    #region Test
+
                     string userName = null;
                     if (LastLogin % 2 == 0)
                     {
@@ -36,11 +37,26 @@ namespace ODataService.Controllers
                     }
                     LastLogin++;
 
-                    security = ConnectionHelper.GetSecurity(userName);
-                    provider = ConnectionHelper.GetSecuredObjectSpaceProvider(security);
+                    #endregion
+
+                    SetSecuredObjectSpaceProviderFromCache(userName);
                 }
                 return provider;
             }
+        }
+
+        public async void SetSecuredObjectSpaceProviderFromCache(string userName)
+        {
+            var item = await MemoryCacheManager.Instance.GetOrCreate(userName, async () => await CreateCacheItem(userName));
+            provider = item.Provider;
+        }
+
+        public async Task<CacheItem> CreateCacheItem(string userName)
+        {
+            CacheItem result = new CacheItem();
+            result.Security = ConnectionHelper.GetSecurity(userName);
+            result.Provider = ConnectionHelper.GetSecuredObjectSpaceProvider(result.Security);
+            return result;
         }
 
         private Session session = null;
@@ -78,16 +94,16 @@ namespace ODataService.Controllers
                     session.Dispose();
                     session = null;
                 }
-                if (security != null)
-                {
-                    security.Dispose();
-                    security = null;
-                }
-                if (provider != null)
-                {
-                    provider.Dispose();
-                    provider = null;
-                }
+                //if (security != null)
+                //{
+                //    security.Dispose();
+                //    security = null;
+                //}
+                //if (provider != null)
+                //{
+                //    provider.Dispose();
+                //    provider = null;
+                //}
             }
         }
 
