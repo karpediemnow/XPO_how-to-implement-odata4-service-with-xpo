@@ -45,13 +45,13 @@ namespace ODataService.Controllers
             }
         }
 
-        public async void SetSecuredObjectSpaceProviderFromCache(string userName)
+        private async void SetSecuredObjectSpaceProviderFromCache(string userName)
         {
-            var item = await MemoryCacheManager.Instance.GetOrCreate(userName, async () => await CreateCacheItem(userName));
-            provider = item.Provider;
+            var cacheItem = await MemoryCacheManager.Instance.GetOrCreate(userName, async () => await CreateCacheItem(userName));
+            provider = cacheItem.Provider;
         }
 
-        public async Task<CacheItem> CreateCacheItem(string userName)
+        private async Task<CacheItem> CreateCacheItem(string userName)
         {
             CacheItem result = new CacheItem();
             result.Security = ConnectionHelper.GetSecurity(userName);

@@ -8,7 +8,7 @@ using System.Web;
 namespace ODataService.Helpers
 {
 
-    public class CacheItem
+    public class CacheItem : IDisposable
     {
         public SecurityStrategyComplex Security { get; set; }
 
@@ -17,6 +17,20 @@ namespace ODataService.Helpers
         public CacheItem()
         {
 
+        }
+
+        public void Dispose()
+        {
+            if (Security != null)
+            {
+                Security.Dispose();
+                Security = null;
+            }
+            if (Provider != null)
+            {
+                Provider.Dispose();
+                Provider = null;
+            }
         }
     }
 }

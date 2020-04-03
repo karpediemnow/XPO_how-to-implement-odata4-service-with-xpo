@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -26,34 +27,27 @@ namespace ODataService.Helpers
             }
         }
 
-        private MemoryCache MemoryCache = new MemoryCache(new MemoryCacheOptions());
-        private ConcurrentDictionary<object, SemaphoreSlim> locks = new ConcurrentDictionary<object, SemaphoreSlim>();
+        private MemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
+        private ConcurrentDictionary<object, SemaphoreSlim> cacheLocks = new ConcurrentDictionary<object, SemaphoreSlim>();
 
         public async Task<CacheItem> GetOrCreate(object key, Func<Task<CacheItem>> createItem)
         {
             CacheItem cacheEntry;
-            if (!MemoryCache.TryGetValue(key, out cacheEntry))// Look for cache key.
+            if (!memoryCache.TryGetValue(key, out cacheEntry))// Look for cache key.
             {
-                SemaphoreSlim mylock = locks.GetOrAdd(key, k => new SemaphoreSlim(1, 1));
+                SemaphoreSlim mylock = cacheLocks.GetOrAdd(key, k => new SemaphoreSlim(1, 1));
                 await mylock.WaitAsync();
                 try
                 {
-                    if (!MemoryCache.TryGetValue(key, out cacheEntry))
+                    if (!memoryCache.TryGetValue(key, out cacheEntry))
                     {
                         // Key not in cache, so get data.
                         cacheEntry = await createItem();
 
-                        var cacheEntryOptions = new MemoryCacheEntryOptions()
-                         .SetSize(1)//Size amount
-                        //Priority on removing when reaching size limit (memory pressure)
-                        .SetPriority(CacheItemPriority.High)
-                        // Keep in cache for this time, reset time if accessed.
-                        .SetSlidingExpiration(TimeSpan.FromSeconds(10))
-                        // Remove from cache after this time, regardless of sliding expiration
-                        .SetAbsoluteExpiration(TimeSpan.FromSeconds(10));
-
-
-                        MemoryCache.Set(key, cacheEntry, cacheEntryOptions);
+                        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                        var cacheEntryOptions = new MemoryCacheEntryOptions().RegisterPostEvictionCallback(CacheItemRemoved)
+                            .AddExpirationToken(new CancellationChangeToken(cts.Token));
+                        memoryCache.Set(key, cacheEntry, cacheEntryOptions);
                     }
                 }
                 finally
@@ -66,7 +60,10 @@ namespace ODataService.Helpers
 
         private void CacheItemRemoved(object key, object value, EvictionReason reason, object state)
         {
-
+            if (value != null && value is CacheItem)
+            {
+                ((CacheItem)value).Dispose();
+            }
         }
     }
 
