@@ -24,7 +24,10 @@ namespace ODataService.Controllers
             {
                 if (provider == null)
                 {
+
                     #region Test
+
+                    // lichy/sudy request at nemusim resit autentizaci...
 
                     string userName = null;
                     if (LastLogin % 2 == 0)
