@@ -65,9 +65,12 @@ Steps to implement:
 8. Implement the required methods in controllers (e.g., `Get`, `Post`, `Put`, `Path`, `Delete`, etc.). For reference, use existing controllers in this example. For example: **CS\ODataService\Controllers\CustomersController.cs**.
 
 
-TEST:
+TEST Odata + XPO + security + memory cache:
 
 even/odd request to change user...
+
 user1 have permissions to Orders
+
 user2 doesnt have prmissions to Orders
+
 example: http://localhost:54417/XpoOData/Order
