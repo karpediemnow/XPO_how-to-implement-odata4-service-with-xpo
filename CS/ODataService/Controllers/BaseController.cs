@@ -25,9 +25,12 @@ namespace ODataService.Controllers
                 if (provider == null)
                 {
 
-                    #region Test
+                    #region Test to change user
 
-                    // lichy/sudy request at nemusim resit autentizaci...
+                    // even/odd request to change user...
+                    // user1 have permissions to Orders
+                    // user2 doesnt have prmissions to Orders
+                    // http://localhost:54417/XpoOData/Order
 
                     string userName = null;
                     if (LastLogin % 2 == 0)
