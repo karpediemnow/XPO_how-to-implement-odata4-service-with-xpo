@@ -71,6 +71,6 @@ even/odd request to change user...
 
 user1 have permissions to Orders
 
-user2 doesnt have prmissions to Orders
+user2 doesnt have permissions to Orders
 
 example: http://localhost:54417/XpoOData/Order
